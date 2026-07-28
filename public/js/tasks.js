@@ -1,10 +1,42 @@
 $(function () {
+
+    $('#btnAddTask').on('click', function () {
+        resetForm();
+        $("#taskModal").modal("show");
+    });
+
+    // Edit button click
+    $("#tasksTableBody").on('click', '.btn-edit', function () {
+        resetForm();
+
+        var $btn = $(this);
+
+        $('#task_id').val($btn.data('id'));
+        $('#name').val($btn.data('name'));
+        $('#description').val($btn.data('description') || '');
+
+        $('#taskModalTitle').text('Edit Task');
+
+        $("#taskModal").modal("show");
+    });
+
+
+    // Form submit - Add or Update task
     $('#taskForm').on('submit', function (e) {
         e.preventDefault();
 
         var $form = $(this);
-        var url = $form.data('store-url');
-        var $submitBtn = $form.find('#taskFormSubmit');
+
+        var id = $('#task_id').val();
+        var isEdit = id ? true : false;
+        var url = isEdit
+            ? $form.data('update-url') + '/' + id
+            : $form.data('store-url');
+
+        var method = isEdit ? 'PUT' : 'POST';
+
+       
+       var $submitBtn = $form.find('#taskFormSubmit');
 
         console.log(url);
 
@@ -12,26 +44,23 @@ $(function () {
 
         $.ajax({
             url: url,
-            method: 'POST',
+            method: method,
             data: $form.serialize(),
             success: function (res) {
                 var task = res.task;
-                var created = task.created_at ? task.created_at.replace('T', ' ').substring(0, 16) : '';
 
-                // remove empty row if present
-                $('#tasksTableBody tr td[colspan]').closest('tr').remove();
+                if (isEdit) {
+                    var $row = $('#tasksTableBody tr[data-id="' + task.id + '"]');
+                    $row.replaceWith(rowHtml(task));
+                } else {
+                    $('#tasksTableBody tr td[colspan]').closest('tr').remove();
+                    $('#tasksTableBody').append(rowHtml(task));
+                }
 
-                $('#tasksTableBody').append(
-                    '<tr data-id="' + task.id + '">' +
-                        '<td>' + task.name + '</td>' +
-                        '<td>' + created + '</td>' +
-                        '<td></td>' +
-                    '</tr>'
-                );
 
-                $form[0].reset();
+                resetForm();
                 $submitBtn.prop('disabled', false);
-                $('#taskModal').modal('hide');
+                $('#taskModal').modal('toggle');
 
                 showToast(res.message || 'Task created successfully', 'success');
             },
@@ -50,4 +79,69 @@ $(function () {
             }
         });
     });
+
+
+    // Delete button click
+    $("#tasksTableBody").on('click', '.btn-delete', function () {
+        var id = $(this).data('id');
+        var url = $('#taskForm').data('update-url') + '/' + id;
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'This task will be deleted.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes',
+            cancelButtonText: 'No'
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
+
+            $.ajax({
+                url: url,
+                method: 'DELETE',
+                data: id,
+                success: function (res) {
+                    $('#tasksTableBody tr[data-id="' + id + '"]').remove();
+                    if ($('#tasksTableBody tr').length === 0) {
+                        $('#tasksTableBody').append(
+                            '<tr><td colspan="3" class="text-center text-muted py-4">No tasks yet.</td></tr>'
+                        );
+                    }
+                    showToast(res.message || 'Task deleted successfully', 'success');
+                },
+                error: function () {
+                    showToast('Something went wrong', 'error');
+                }
+            });
+        });
+    });
 });
+
+function resetForm() {
+    var $form = $('#taskForm');
+    $form[0].reset();
+
+    $('#task_id').val('');
+    $('#taskModalTitle').text('Add Task');
+
+    $form.find('.is-invalid').removeClass('is-invalid');
+}
+
+function rowHtml(task) {
+    var created = task.created_at
+        ? task.created_at.replace('T', ' ').substring(0, 16)
+        : '';
+    var desc = task.description || '';
+    return '<tr data-id="' + task.id + '">' +
+        '<td class="task-name">' + $('<div>').text(task.name).html() + '</td>' +
+        '<td>' + created + '</td>' +
+        '<td class="text-end text-nowrap">' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary btn-edit" ' +
+                'data-id="' + task.id + '" ' +
+                'data-name="' + $('<div>').text(task.name).html() + '" ' +
+                'data-description="' + $('<div>').text(desc).html() + '">Edit</button> ' +
+            '<button type="button" class="btn btn-sm btn-outline-danger btn-delete" ' +
+                'data-id="' + task.id + '">Delete</button>' +
+        '</td>' +
+    '</tr>';
+}

@@ -5,7 +5,7 @@
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="h3 mb-0">Tasks</h1>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#taskModal" >Add Task</button>
+        <button class="btn btn-primary" id="btnAddTask">Add Task</button>
     </div>
 
     <div class="card">
@@ -24,7 +24,20 @@
                             <tr data-id="{{ $task->id }}">
                                 <td>{{ $task->name }}</td>
                                 <td>{{ $task->created_at->format('Y-m-d H:i') }}</td>
-                                <td></td>
+                                <td class="text-end text-nowrap">
+                                    <button type="button"
+                                        class="btn btn-sm btn-outline-secondary btn-edit"
+                                        data-id="{{ $task->id }}"
+                                        data-name="{{ $task->name }}"
+                                        data-description="{{ $task->description }}">
+                                        Edit
+                                    </button>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger btn-delete"
+                                            data-id="{{ $task->id }}">
+                                        Delete
+                                    </button>
+                                </td>
                             </tr>
                         @empty
                             <tr>
@@ -43,10 +56,11 @@
 
     <div class="modal fade" id="taskModal" tabindex="-1">
         <div class="modal-dialog">
-            <form id="taskForm" method="POST" class="modal-content" data-store-url="{{ route('tasks.store') }}">
+            <form id="taskForm" method="POST" class="modal-content" data-store-url="{{ route('tasks.store') }}" data-update-url="{{ url('/tasks') }}">
                 @csrf
+                <input type="hidden" name="task_id" id="task_id" value="">
                 <div class="modal-header">
-                    <h5 class="modal-title">Add Task</h5>
+                    <h5 class="modal-title" id="taskModalTitle"></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">

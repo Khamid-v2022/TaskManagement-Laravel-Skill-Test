@@ -34,4 +34,31 @@ class TaskController extends Controller
             'task' => $task,
         ]);
     }
+
+    public function update(Request $request, Task $task) {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+        ]);
+
+        $task->update([
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Task updated successfully',
+            'task' => $task->fresh(),
+        ]);
+    }
+
+    public function destroy(Task $task) {
+        $task->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Task deleted successfully',
+        ]);
+    }
 }
