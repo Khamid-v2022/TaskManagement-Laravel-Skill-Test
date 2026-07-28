@@ -104,7 +104,7 @@ $(function () {
                     $('#tasksTableBody tr[data-id="' + id + '"]').remove();
                     if ($('#tasksTableBody tr').length === 0) {
                         $('#tasksTableBody').append(
-                            '<tr><td colspan="3" class="text-center text-muted py-4">No tasks yet.</td></tr>'
+                            '<tr><td colspan="4" class="text-center text-muted py-4">No tasks yet.</td></tr>'
                         );
                     }
                     showToast(res.message || 'Task deleted successfully', 'success');
@@ -114,6 +114,29 @@ $(function () {
                 }
             });
         });
+    });
+
+    $('#tasksTableBody').sortable({
+        handle: '.drag-handle',
+        items: 'tr[data-id]',
+        axis: 'y',
+        update: function () {
+            var order = [];
+            $('#tasksTableBody tr[data-id]').each(function () {
+                order.push($(this).data('id'));
+            });
+            $.ajax({
+                url: '/tasks/reorder', // or table data attr
+                method: 'POST',
+                data: {
+                    order: order,
+                },
+                success: function (res) {
+                },
+                error: function () {
+                }
+            });
+        }
     });
 });
 
@@ -133,6 +156,7 @@ function rowHtml(task) {
         : '';
     var desc = task.description || '';
     return '<tr data-id="' + task.id + '">' +
+        '<td class="drag-handle text-muted cursor-pointer">&#9776;</td>' +
         '<td class="task-name">' + $('<div>').text(task.name).html() + '</td>' +
         '<td>' + created + '</td>' +
         '<td class="text-end text-nowrap">' +

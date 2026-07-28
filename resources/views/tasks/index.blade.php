@@ -14,6 +14,7 @@
                 <table class="table table-striped table-hover mb-0 align-middle">
                     <thead class="table-light">
                         <tr>
+                            <th style="width: 40px;">#</th>
                             <th>Name</th>
                             <th class="text-nowrap">Created</th>
                             <th></th>
@@ -22,6 +23,7 @@
                     <tbody id="tasksTableBody">
                         @forelse ($tasks as $task)
                             <tr data-id="{{ $task->id }}">
+                                <td class="drag-handle text-muted cursor-pointer">&#9776;</td>
                                 <td>{{ $task->name }}</td>
                                 <td>{{ $task->created_at->format('Y-m-d H:i') }}</td>
                                 <td class="text-end text-nowrap">
@@ -41,7 +43,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="text-center text-muted py-4">
+                                <td colspan="4" class="text-center text-muted py-4">
                                     No tasks yet.
                                 </td>
                             </tr>

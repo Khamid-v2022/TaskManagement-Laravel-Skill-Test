@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\Task;
 
 class TaskController extends Controller
@@ -59,6 +60,27 @@ class TaskController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Task deleted successfully',
+        ]);
+    }
+
+    // Reorder tasks
+    public function reorder(Request $request)
+    {
+        $validated = $request->validate([
+            'order'   => ['required', 'array'],
+            'order.*' => ['integer', 'exists:tasks,id'],
+        ]);
+
+        DB::transaction(function () use ($validated) {
+            foreach ($validated['order'] as $index => $taskId) {
+                Task::where('id', $taskId)->update([
+                    'priority' => $index + 1, // top = 1
+                ]);
+            }
+        });
+        return response()->json([
+            'success' => true,
+            'message' => 'Tasks reordered successfully',
         ]);
     }
 }
