@@ -13,6 +13,7 @@ $(function () {
 
         $('#task_id').val($btn.data('id'));
         $('#name').val($btn.data('name'));
+        $('#project_id').val($btn.data('project-id') || '');
         $('#description').val($btn.data('description') || '');
 
         $('#taskModalTitle').text('Edit Task');
@@ -52,17 +53,20 @@ $(function () {
                 if (isEdit) {
                     var $row = $('#tasksTableBody tr[data-id="' + task.id + '"]');
                     $row.replaceWith(rowHtml(task));
+
+                    resetForm();
+                    $submitBtn.prop('disabled', false);
+                    $('#taskModal').modal('toggle');
+    
+                    showToast(res.message || 'Task created successfully', 'success');
                 } else {
-                    $('#tasksTableBody tr td[colspan]').closest('tr').remove();
-                    $('#tasksTableBody').append(rowHtml(task));
+                    // $('#tasksTableBody tr td[colspan]').closest('tr').remove();
+                    // $('#tasksTableBody').append(rowHtml(task));
+                    location.reload()
                 }
 
 
-                resetForm();
-                $submitBtn.prop('disabled', false);
-                $('#taskModal').modal('toggle');
-
-                showToast(res.message || 'Task created successfully', 'success');
+               
             },
             error: function (xhr) {
                 if (xhr.status === 422) {
@@ -154,15 +158,23 @@ function rowHtml(task) {
     var created = task.created_at
         ? task.created_at.replace('T', ' ').substring(0, 16)
         : '';
+
+    console.log(task);
+    var projectName = (task.project && task.project.name) ? task.project.name : 'Unassigned';
+    var projectId = task.project_id || '';
+
     var desc = task.description || '';
+
     return '<tr data-id="' + task.id + '">' +
         '<td class="drag-handle text-muted cursor-pointer">&#9776;</td>' +
         '<td class="task-name">' + $('<div>').text(task.name).html() + '</td>' +
+        '<td>' + projectName + '</td>' +
         '<td>' + created + '</td>' +
         '<td class="text-end text-nowrap">' +
             '<button type="button" class="btn btn-sm btn-outline-secondary btn-edit" ' +
                 'data-id="' + task.id + '" ' +
                 'data-name="' + $('<div>').text(task.name).html() + '" ' +
+                'data-project-id="' + projectId + '" ' +
                 'data-description="' + $('<div>').text(desc).html() + '">Edit</button> ' +
             '<button type="button" class="btn btn-sm btn-outline-danger btn-delete" ' +
                 'data-id="' + task.id + '">Delete</button>' +

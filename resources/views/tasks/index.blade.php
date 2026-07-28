@@ -8,6 +8,25 @@
         <button class="btn btn-primary" id="btnAddTask">Add Task</button>
     </div>
 
+    <form method="GET" action="{{ route('tasks.index') }}" class="mb-3">
+        <div class="row g-2 align-items-center">
+            <div class="col-auto">
+                <label for="projectFilter" class="col-form-label">Project</label>
+            </div>
+            <div class="col-auto">
+                <select name="project" id="projectFilter" class="form-select" onchange="this.form.submit()">
+                    <option value="all" @selected($filter === 'all')>All</option>
+                    <option value="unassigned" @selected($filter === 'unassigned')>Unassigned</option>
+                    @foreach ($projects as $project)
+                        <option value="{{ $project->id }}" @selected((string) $filter === (string) $project->id)>
+                            {{ $project->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+    </form>
+
     <div class="card">
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -16,6 +35,7 @@
                         <tr>
                             <th style="width: 40px;">#</th>
                             <th>Name</th>
+                            <th class="text-nowrap">Project name</th>
                             <th class="text-nowrap">Created</th>
                             <th></th>
                         </tr>
@@ -25,12 +45,16 @@
                             <tr data-id="{{ $task->id }}">
                                 <td class="drag-handle text-muted cursor-pointer">&#9776;</td>
                                 <td>{{ $task->name }}</td>
+                                <td class="task-project">
+                                    {{ $task->project?->name ?? 'Unassigned' }}
+                                </td>
                                 <td>{{ $task->created_at->format('Y-m-d H:i') }}</td>
                                 <td class="text-end text-nowrap">
                                     <button type="button"
                                         class="btn btn-sm btn-outline-secondary btn-edit"
                                         data-id="{{ $task->id }}"
                                         data-name="{{ $task->name }}"
+                                        data-project-id="{{ $task->project_id }}"
                                         data-description="{{ $task->description }}">
                                         Edit
                                     </button>
@@ -43,7 +67,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="text-center text-muted py-4">
+                                <td colspan="5" class="text-center text-muted py-4">
                                     No tasks yet.
                                 </td>
                             </tr>
@@ -71,6 +95,15 @@
                         <input type="text" name="name" id="name"
                             class="form-control"
                             value="{{ old('name') }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="project_id" class="form-label">Project</label>
+                        <select name="project_id" id="project_id" class="form-select">
+                            <option value="">Unassigned</option>
+                            @foreach ($projects as $project)
+                                <option value="{{ $project->id }}">{{ $project->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label for="description" class="form-label">Description</label>
