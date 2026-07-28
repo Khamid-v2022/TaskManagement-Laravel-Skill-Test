@@ -32,14 +32,17 @@ $(function () {
                 $form[0].reset();
                 $submitBtn.prop('disabled', false);
                 $('#taskModal').modal('hide');
+
+                showToast(res.message || 'Task created successfully', 'success');
             },
             error: function (xhr) {
                 if (xhr.status === 422) {
                     var errors = xhr.responseJSON.errors;
                     var msg = errors.name ? errors.name[0] : 'Validation failed';
-                    console.log(msg);
+                    // console.log(msg);
+                    showToast(msg, 'error');
                 } else {
-                    
+                    showToast('Something went wrong', 'error');
                 }
             },
             complete: function () {
