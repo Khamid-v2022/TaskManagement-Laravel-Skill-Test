@@ -5,6 +5,7 @@
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="h3 mb-0">Tasks</h1>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#taskModal" >Add Task</button>
     </div>
 
     <div class="card">
@@ -18,9 +19,9 @@
                             <th></th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="tasksTableBody">
                         @forelse ($tasks as $task)
-                            <tr>
+                            <tr data-id="{{ $task->id }}">
                                 <td>{{ $task->name }}</td>
                                 <td>{{ $task->created_at->format('Y-m-d H:i') }}</td>
                                 <td></td>
@@ -37,4 +38,38 @@
             </div>
         </div>
     </div>
+
+
+
+    <div class="modal fade" id="taskModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form id="taskForm" method="POST" class="modal-content" data-store-url="{{ route('tasks.store') }}">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" name="name" id="name"
+                            class="form-control"
+                            value="{{ old('name') }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea name="description" id="description" class="form-control"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="taskFormSubmit">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
 @endsection
+
+@push('scripts')
+    <script src="{{ asset('js/tasks.js') }}"></script>
+@endpush
